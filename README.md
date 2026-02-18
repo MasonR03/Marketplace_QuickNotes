@@ -13,13 +13,12 @@ Adds private notes to Facebook Marketplace listing cards so you can see and edit
 - Keeps working while Marketplace lazy-loads more listings
 
 ## Install locally
-
-1. Open `chrome://extensions` (or `edge://extensions`).
-2. Enable **Developer mode**.
-3. Click **Load unpacked**.
-4. Select this folder:
-   - `/Volumes/HDD_pool/Data/Development Environment/marketplace_extension`
-5. Open Facebook Marketplace search results and refresh the page.
+1. Download the project source files
+2. Open `chrome://extensions` (or `brave://extensions`).
+3. Enable **Developer mode**.
+4. Click **Load unpacked**.
+5. Select the project folder
+6. Open Facebook Marketplace search results and refresh the page.
 
 ## Usage
 
