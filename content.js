@@ -248,10 +248,14 @@
         top: 8px;
         right: 8px;
         z-index: 12;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
       .fm-notes-chip {
+        align-self: flex-end;
         border: none;
         border-radius: 999px;
         padding: 6px 10px;
@@ -274,6 +278,7 @@
         display: none;
         margin-top: 6px;
         width: 220px;
+        text-align: left;
         border-radius: 10px;
         padding: 8px 10px;
         background: rgba(17, 17, 17, 0.95);
@@ -313,6 +318,7 @@
         display: none;
         width: 220px;
         margin-top: 6px;
+        text-align: left;
         border-radius: 10px;
         padding: 8px;
         background: rgba(17, 17, 17, 0.95);
