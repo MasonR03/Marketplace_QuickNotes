@@ -1,4 +1,5 @@
 # Marketplace Quick Notes (Chromium Extension)
+<img width="762" height="713" alt="image" src="https://github.com/user-attachments/assets/e9f7e7b5-621d-4304-876b-807769cba794" />
 
 Adds private notes to Facebook Marketplace listing cards so you can see and edit notes without opening each listing.
 
