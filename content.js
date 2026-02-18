@@ -1,9 +1,11 @@
 (() => {
   const NOTES_KEY = "fbMarketplaceNotesV1";
+  const MESSAGED_KEY = "fbMarketplaceMessagedV1";
   const MARK_PROCESSED = "fmNotesAttached";
   const STYLE_ID = "fm-notes-style";
 
   let notesById = {};
+  let messagedById = {};
   let scanQueued = false;
 
   function safeParseUrl(href) {
@@ -82,8 +84,48 @@
     }
   }
 
+  function syncMessagedUi(anchorEl, messagedBtnEl, listingId) {
+    const isMessaged = !!messagedById[listingId];
+    anchorEl.classList.toggle("fm-messaged-listing", isMessaged);
+    const borderOverlay = anchorEl.querySelector(".fm-messaged-overlay");
+    if (borderOverlay) {
+      borderOverlay.classList.toggle("is-active", isMessaged);
+    }
+
+    if (messagedBtnEl) {
+      messagedBtnEl.textContent = isMessaged ? "Unmark Messaged" : "Mark Messaged";
+      messagedBtnEl.classList.toggle("is-active", isMessaged);
+    }
+  }
+
+  function refreshInjectedUi() {
+    const containers = document.querySelectorAll(".fm-notes-container");
+    for (const container of containers) {
+      const anchor = container.closest('a[href*="/marketplace/item/"]');
+      if (!anchor) {
+        continue;
+      }
+      const listingId = getListingIdFromHref(anchor.href);
+      if (!listingId) {
+        continue;
+      }
+
+      const chip = container.querySelector(".fm-notes-chip");
+      const preview = container.querySelector(".fm-notes-preview");
+      if (chip && preview) {
+        syncNoteUi(chip, preview, notesById[listingId] || "");
+      }
+
+      const messagedBtn = container.querySelector(".fm-notes-messaged");
+      syncMessagedUi(anchor, messagedBtn, listingId);
+    }
+  }
+
   function createNoteUi(anchorEl, listingId) {
     const existing = notesById[listingId] || "";
+
+    const borderOverlay = document.createElement("div");
+    borderOverlay.className = "fm-messaged-overlay";
 
     const container = document.createElement("div");
     container.className = "fm-notes-container";
@@ -116,7 +158,11 @@
     clearBtn.className = "fm-notes-clear";
     clearBtn.textContent = "Clear";
 
-    actions.append(saveBtn, clearBtn);
+    const messagedBtn = document.createElement("button");
+    messagedBtn.type = "button";
+    messagedBtn.className = "fm-notes-messaged";
+
+    actions.append(messagedBtn, saveBtn, clearBtn);
     panel.append(textarea, actions);
     container.append(chip, preview, panel);
 
@@ -155,9 +201,27 @@
       event.stopPropagation();
       textarea.value = "";
       delete notesById[listingId];
+      delete messagedById[listingId];
       syncNoteUi(chip, preview, "");
-      await chrome.storage.local.set({ [NOTES_KEY]: notesById });
+      syncMessagedUi(anchorEl, messagedBtn, listingId);
+      await chrome.storage.local.set({
+        [NOTES_KEY]: notesById,
+        [MESSAGED_KEY]: messagedById
+      });
       panel.classList.remove("is-open");
+    });
+
+    messagedBtn.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const nextValue = !messagedById[listingId];
+      if (nextValue) {
+        messagedById[listingId] = true;
+      } else {
+        delete messagedById[listingId];
+      }
+      syncMessagedUi(anchorEl, messagedBtn, listingId);
+      await chrome.storage.local.set({ [MESSAGED_KEY]: messagedById });
     });
 
     textarea.addEventListener("keydown", async (event) => {
@@ -167,7 +231,8 @@
       }
     });
 
-    anchorEl.appendChild(container);
+    anchorEl.append(borderOverlay, container);
+    syncMessagedUi(anchorEl, messagedBtn, listingId);
   }
 
   function ensureStyles() {
@@ -224,6 +289,26 @@
         display: block;
       }
 
+      .fm-messaged-listing {
+        box-shadow: inset 0 0 0 2px rgba(225, 68, 68, 0.35) !important;
+        border-radius: 12px;
+      }
+
+      .fm-messaged-overlay {
+        position: absolute;
+        inset: 0;
+        display: none;
+        border: 3px solid #e14444;
+        border-radius: 12px;
+        pointer-events: none;
+        z-index: 11;
+        box-sizing: border-box;
+      }
+
+      .fm-messaged-overlay.is-active {
+        display: block;
+      }
+
       .fm-notes-panel {
         display: none;
         width: 220px;
@@ -255,16 +340,29 @@
         margin-top: 6px;
         display: flex;
         gap: 6px;
-        justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
       }
 
       .fm-notes-save,
-      .fm-notes-clear {
+      .fm-notes-clear,
+      .fm-notes-messaged {
         border: none;
         border-radius: 7px;
         padding: 6px 11px;
         font-size: 13px;
         cursor: pointer;
+      }
+
+      .fm-notes-messaged {
+        margin-right: auto;
+        background: #4b2020;
+        color: #ffd8d8;
+      }
+
+      .fm-notes-messaged.is-active {
+        background: #d83b3b;
+        color: #fff;
       }
 
       .fm-notes-save {
@@ -342,35 +440,27 @@
     });
   }
 
-  chrome.storage.local.get([NOTES_KEY], (result) => {
+  chrome.storage.local.get([NOTES_KEY, MESSAGED_KEY], (result) => {
     notesById = result[NOTES_KEY] || {};
+    messagedById = result[MESSAGED_KEY] || {};
     ensureStyles();
     queueScan();
     observeDynamicListings();
   });
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== "local" || !changes[NOTES_KEY]) {
+    if (areaName !== "local") {
       return;
     }
 
-    notesById = changes[NOTES_KEY].newValue || {};
-
-    const chips = document.querySelectorAll(".fm-notes-container");
-    for (const container of chips) {
-      const anchor = container.closest('a[href*="/marketplace/item/"]');
-      if (!anchor) {
-        continue;
-      }
-      const listingId = getListingIdFromHref(anchor.href);
-      if (!listingId) {
-        continue;
-      }
-      const chip = container.querySelector(".fm-notes-chip");
-      const preview = container.querySelector(".fm-notes-preview");
-      if (chip && preview) {
-        syncNoteUi(chip, preview, notesById[listingId] || "");
-      }
+    if (changes[NOTES_KEY]) {
+      notesById = changes[NOTES_KEY].newValue || {};
+    }
+    if (changes[MESSAGED_KEY]) {
+      messagedById = changes[MESSAGED_KEY].newValue || {};
+    }
+    if (changes[NOTES_KEY] || changes[MESSAGED_KEY]) {
+      refreshInjectedUi();
     }
   });
 })();

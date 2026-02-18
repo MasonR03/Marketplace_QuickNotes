@@ -7,6 +7,7 @@ Adds private notes to Facebook Marketplace listing cards so you can see and edit
 - Detects listing cards on `facebook.com/marketplace/*`
 - Adds a small `+ Note` chip to each listing card
 - Lets you write/save/clear a note per listing
+- Lets you manually mark a listing as messaged (red border highlight)
 - Stores notes locally via `chrome.storage.local`
 - Keeps working while Marketplace lazy-loads more listings
 
@@ -24,6 +25,7 @@ Adds private notes to Facebook Marketplace listing cards so you can see and edit
 - Click `+ Note` on any listing card.
 - Enter text and click `Save`.
 - Use `Clear` to remove the note.
+- Click `Mark Messaged` to toggle a red border on that listing.
 - Shortcut: `Enter` saves while focused in the note box (`Shift+Enter` inserts a new line).
 
 ## Files
