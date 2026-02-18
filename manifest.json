@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Marketplace Quick Notes",
+  "version": "0.1.0",
+  "description": "Write private notes on Facebook Marketplace listings directly in search results.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.facebook.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.facebook.com/marketplace/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+# Marketplace Quick Notes (Chromium Extension)
+
+Adds private notes to Facebook Marketplace listing cards so you can see and edit notes without opening each listing.
+
+## What it does
+
+- Detects listing cards on `facebook.com/marketplace/*`
+- Adds a small `+ Note` chip to each listing card
+- Lets you write/save/clear a note per listing
+- Stores notes locally via `chrome.storage.local`
+- Keeps working while Marketplace lazy-loads more listings
+
+## Install locally
+
+1. Open `chrome://extensions` (or `edge://extensions`).
+2. Enable **Developer mode**.
+3. Click **Load unpacked**.
+4. Select this folder:
+   - `/Volumes/HDD_pool/Data/Development Environment/marketplace_extension`
+5. Open Facebook Marketplace search results and refresh the page.
+
+## Usage
+
+- Click `+ Note` on any listing card.
+- Enter text and click `Save`.
+- Use `Clear` to remove the note.
+- Shortcut: `Enter` saves while focused in the note box (`Shift+Enter` inserts a new line).
+
+## Files
+
+- `manifest.json` - extension config (MV3)
+- `content.js` - UI injection + note persistence logic
